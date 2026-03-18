@@ -5,17 +5,19 @@ rm -rf openwrt
 rm -rf mtk-openwrt-feeds
 
 git clone --branch openwrt-25.12 https://github.com/openwrt/openwrt.git openwrt
-cd openwrt; git checkout dbb6f0b547960ec489ca50ef24d99885b2595b16; cd -;		#mediatek: TP-Link EAP683-UR support
+cd openwrt; git checkout b21cfa8f8ccd8ccb89c9a735b9566fff29dc61a7; cd -;		#odhcpd: update to 25.12 Git HEAD (2026-03-16)
 
 git clone --branch master https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds
-cd mtk-openwrt-feeds; git checkout e85f8374bdffb1ebd0d1c0822c5c3992d1201f49; cd -;	#[25.12][common][optee][add rust build support for OP-TEE TA/host]
+cd mtk-openwrt-feeds; git checkout ad6d92efcde329c950f12545b183622f34c1c85f; cd -;	#[openwrt][mt798x][config][Disable unused trusted firmware packages]
+
+\cp -r my_files/feed_revision mtk-openwrt-feeds/autobuild/unified/
 
 \cp -r my_files/999-sfp-10-additional-quirks.patch mtk-openwrt-feeds/25.12/files/target/linux/mediatek/patches-6.12
 
 \cp -r my_files/9999-image-bpi-r4-sdcard.patch mtk-openwrt-feeds/25.12/patches-base
 
-### tx_power check Gilly_1970's patch - for defective BE14 boards with defective eeprom flash
-#\cp -r my_files/0140-wifi-mt76-mt7996-use-mt76_get_txpower_cur.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/25.12/files/package/kernel/mt76/patches
+### tx_power check Ivan Mironov's patch - for defective BE14 boards with defective eeprom flash
+\cp -r my_files/100-wifi-mt76-mt7996-Use-tx_power-from-default-fw-if-EEP.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/25.12/files/package/kernel/mt76/patches
 
 cd openwrt
 rm -f ../mtk-openwrt-feeds/25.12/patches-feeds/cryptsetup-01-add-host-build.patch
@@ -30,13 +32,14 @@ bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt798x
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-#\cp -r ../my_files/qmi.sh package/network/utils/uqmi/files/lib/netifd/proto/
-#chmod -R 755 package/network/utils/uqmi/files/lib/netifd/proto
+\cp -r ../my_files/qmi.sh package/network/utils/uqmi/files/lib/netifd/proto/
+chmod -R 755 package/network/utils/uqmi/files/lib/netifd/proto
 chmod -R 755 feeds/luci/applications/luci-app-modemdata/root
 chmod -R 755 feeds/luci/applications/luci-app-sms-tool-js/root
 chmod -R 755 feeds/packages/utils/modemdata/files/usr/share
 
-\cp -r ../my_files/my_final_defconfig .config
+#\cp -r ../my_files/my_final_defconfig .config
+\cp -r ../configs/config.hnat.la .config
 make defconfig
 
 bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt798x_rfb-wifi7_nic build
